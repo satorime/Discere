@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: discere
+    runtime: python
+    buildCommand: "./build_files.sh"
+    startCommand: "gunicorn discere.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: discere-db
+          property: connectionString
+
+databases:
+  - name: discere-db
+    databaseName: discere
+    user: discere
+    plan: free

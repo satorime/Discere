@@ -19,7 +19,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-+(!cd*ahe^gfn=)$pd=se
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost 127.0.0.1').split()
-ALLOWED_HOSTS += ['.vercel.app']  # Allow all Vercel subdomains
+ALLOWED_HOSTS += ['.onrender.com']  # Allow all Render subdomains
 
 
 # Application definition
