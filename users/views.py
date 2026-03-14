@@ -173,11 +173,11 @@ def create_deck_view(request):
             messages.error(request, 'Please upload a PDF or paste some text.')
             return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
 
-        # Generate flashcards with Gemini
+        # Generate flashcards with AI
         try:
             cards_data = ai_utils.generate_flashcards(source_text, num_cards)
         except Exception as e:
-            messages.error(request, f'AI generation failed: {str(e)}. Check your GEMINI_API_KEY.')
+            messages.error(request, f'AI generation failed: {str(e)}. Check your GROQ_API_KEY.')
             return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
 
         # Save deck and flashcards
@@ -214,6 +214,29 @@ def delete_deck_view(request, deck_id):
     deck.delete()
     messages.success(request, f'Deck "{deck.title}" deleted.')
     return redirect('decks')
+
+
+@login_required(login_url='login')
+@require_POST
+def add_flashcard_view(request, deck_id):
+    deck = get_object_or_404(Deck, id=deck_id, created_by=request.user)
+    front = request.POST.get('front', '').strip()
+    back = request.POST.get('back', '').strip()
+    if front and back:
+        Flashcard.objects.create(deck=deck, front=front, back=back)
+        messages.success(request, 'Flashcard added.')
+    else:
+        messages.error(request, 'Both front and back are required.')
+    return redirect('deck_detail', deck_id=deck_id)
+
+
+@login_required(login_url='login')
+def delete_flashcard_view(request, card_id):
+    card = get_object_or_404(Flashcard, id=card_id, deck__created_by=request.user)
+    deck_id = card.deck_id
+    card.delete()
+    messages.success(request, 'Flashcard deleted.')
+    return redirect('deck_detail', deck_id=deck_id)
 
 
 # ──────────────────────────────────────────────

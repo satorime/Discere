@@ -8,5 +8,5 @@ django-allauth==65.15.0
 PyJWT==2.12.1
 cryptography==46.0.5
 requests==2.32.3
-google-genai==1.67.0
+groq==1.1.1
 pypdf==6.8.0

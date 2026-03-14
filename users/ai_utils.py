@@ -1,14 +1,14 @@
 import json
 import re
 import os
-from google import genai
+from groq import Groq
 
 _client = None
 
 def get_client():
     global _client
     if _client is None:
-        _client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY', ''))
+        _client = Groq(api_key=os.environ.get('GROQ_API_KEY', ''))
     return _client
 
 
@@ -31,25 +31,34 @@ def _parse_json(text):
 
 def generate_flashcards(text, num_cards=10):
     """
-    Generate flashcards from text using Gemini.
+    Generate flashcards from text using Groq (llama-3.3-70b).
     Returns list of dicts: [{front, back}, ...]
     """
-    prompt = f"""You are an expert tutor. Generate exactly {num_cards} flashcards from the text below.
-Return ONLY a valid JSON array — no explanation, no markdown, just raw JSON.
-Format:
-[
-  {{"front": "question or key term", "back": "answer or definition"}},
-  ...
-]
-
-Text:
-{text[:6000]}"""
-
-    response = get_client().models.generate_content(
-        model='gemini-2.0-flash',
-        contents=prompt
+    response = get_client().chat.completions.create(
+        model='llama-3.3-70b-versatile',
+        messages=[
+            {
+                'role': 'system',
+                'content': (
+                    'You are an expert tutor. When given text, you generate flashcards. '
+                    'You ALWAYS respond with ONLY a valid JSON array — no explanation, '
+                    'no markdown code fences, no extra text. Just raw JSON.'
+                )
+            },
+            {
+                'role': 'user',
+                'content': (
+                    f'Generate exactly {num_cards} flashcards from the text below.\n'
+                    'Format:\n'
+                    '[{"front": "question or key term", "back": "answer or definition"}, ...]\n\n'
+                    f'Text:\n{text[:6000]}'
+                )
+            }
+        ],
+        temperature=0.4,
+        max_tokens=4096,
     )
-    return _parse_json(response.text)
+    return _parse_json(response.choices[0].message.content)
 
 
 def generate_quiz(flashcards_data, num_questions=5):
@@ -61,27 +70,28 @@ def generate_quiz(flashcards_data, num_questions=5):
     cards_text = '\n'.join(
         [f"Q: {c['front']}\nA: {c['back']}" for c in flashcards_data[:30]]
     )
-    prompt = f"""You are an expert quiz maker. Generate exactly {num_questions} multiple-choice questions based on these flashcards.
-Return ONLY a valid JSON array — no explanation, no markdown, just raw JSON.
-Format:
-[
-  {{
-    "question": "question text",
-    "option_a": "...",
-    "option_b": "...",
-    "option_c": "...",
-    "option_d": "...",
-    "correct_answer": "A",
-    "explanation": "brief explanation why this answer is correct"
-  }},
-  ...
-]
-
-Flashcards:
-{cards_text}"""
-
-    response = get_client().models.generate_content(
-        model='gemini-2.0-flash',
-        contents=prompt
+    response = get_client().chat.completions.create(
+        model='llama-3.3-70b-versatile',
+        messages=[
+            {
+                'role': 'system',
+                'content': (
+                    'You are an expert quiz maker. You ALWAYS respond with ONLY a valid JSON array — '
+                    'no explanation, no markdown code fences, no extra text. Just raw JSON.'
+                )
+            },
+            {
+                'role': 'user',
+                'content': (
+                    f'Generate exactly {num_questions} multiple-choice questions from these flashcards.\n'
+                    'Format:\n'
+                    '[{"question":"...","option_a":"...","option_b":"...","option_c":"...","option_d":"...",'
+                    '"correct_answer":"A","explanation":"brief explanation"}, ...]\n\n'
+                    f'Flashcards:\n{cards_text}'
+                )
+            }
+        ],
+        temperature=0.4,
+        max_tokens=4096,
     )
-    return _parse_json(response.text)
+    return _parse_json(response.choices[0].message.content)

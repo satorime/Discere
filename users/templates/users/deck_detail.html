@@ -57,6 +57,28 @@
     </div>
     {% endif %}
 
+    <!-- Add Flashcard Manually -->
+    <div class="deck-section">
+        <h2><i class="fas fa-plus-circle" style="color:var(--study-primary)"></i> Add Flashcard Manually</h2>
+        <form method="post" action="{% url 'add_flashcard' deck.id %}" class="add-card-form">
+            {% csrf_token %}
+            <div class="add-card-inputs">
+                <div class="add-card-field">
+                    <label>Front <span class="optional">(Question / Term)</span></label>
+                    <textarea name="front" rows="2" placeholder="e.g. What is photosynthesis?" required></textarea>
+                </div>
+                <div class="add-card-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="add-card-field">
+                    <label>Back <span class="optional">(Answer / Definition)</span></label>
+                    <textarea name="back" rows="2" placeholder="e.g. The process by which plants convert sunlight..." required></textarea>
+                </div>
+            </div>
+            <button type="submit" class="btn-add-card">
+                <i class="fas fa-plus"></i> Add Card
+            </button>
+        </form>
+    </div>
+
     <!-- Flashcards List -->
     <div class="deck-section">
         <h2>All Flashcards <span class="card-count-badge">{{ deck.card_count }}</span></h2>
@@ -72,9 +94,15 @@
                     <span class="card-label card-label-back">A</span>
                     <p>{{ card.back }}</p>
                 </div>
+                <a href="{% url 'delete_flashcard' card.id %}"
+                   class="card-delete-btn"
+                   onclick="return confirm('Delete this flashcard?')"
+                   title="Delete">
+                    <i class="fas fa-trash"></i>
+                </a>
             </div>
             {% empty %}
-            <p class="no-cards">No flashcards in this deck.</p>
+            <p class="no-cards">No flashcards yet. Add one above or create a deck with AI.</p>
             {% endfor %}
         </div>
     </div>

@@ -343,7 +343,7 @@ input[type="range"] {
 
 .flashcard-list-item {
     display: grid;
-    grid-template-columns: 1fr 2px 1fr;
+    grid-template-columns: 1fr 2px 1fr auto;
     gap: 0;
     background: #fff;
     border: 1px solid var(--border);
@@ -839,4 +839,88 @@ input[type="range"] {
 
     .quiz-nav { justify-content: stretch; }
     .quiz-nav a, .quiz-nav button { flex: 1; justify-content: center; }
+
+    .add-card-inputs { grid-template-columns: 1fr; }
+    .add-card-arrow { display: none; }
 }
+
+/* Add Card Form */
+.add-card-form {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.add-card-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.add-card-arrow { color: var(--text-light); font-size: 1.1rem; }
+
+.add-card-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.add-card-field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Anybody', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    resize: vertical;
+    box-sizing: border-box;
+    transition: var(--transition);
+}
+
+.add-card-field textarea:focus {
+    outline: none;
+    border-color: var(--study-primary);
+    box-shadow: 0 0 0 3px rgba(2,93,48,0.08);
+}
+
+.btn-add-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: var(--study-primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Anybody', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-add-card:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+.card-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    color: #ccc;
+    transition: var(--transition);
+    border-left: 1px solid var(--border);
+    text-decoration: none;
+}
+
+.card-delete-btn:hover { color: var(--study-danger); background: #fde8e8; }
+
+.no-cards { color: var(--text-light); font-size: 0.9rem; padding: 16px 0; }
