@@ -44,6 +44,70 @@
 .create-deck-header h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
 .create-deck-header p { opacity: 0.85; font-size: 0.95rem; }
 
+/* Mode Selector */
+.mode-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 24px 40px 0;
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 16px;
+    background: #f8f9fa;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Anybody', sans-serif;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.mode-btn:hover {
+    border-color: var(--study-primary);
+    background: #f0faf5;
+}
+
+.mode-btn.active {
+    border-color: var(--study-primary);
+    background: #f0faf5;
+    box-shadow: 0 0 0 3px rgba(2,93,48,0.1);
+}
+
+.mode-btn i {
+    font-size: 1.4rem;
+    color: var(--study-primary);
+}
+
+.mode-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.mode-desc {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    line-height: 1.3;
+}
+
+.ai-badge-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--study-primary);
+    color: white;
+    border-radius: 50px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
 .form-section {
     padding: 28px 40px 0;
 }
@@ -822,6 +886,10 @@ input[type="range"] {
     .create-deck-header { padding: 24px 20px 20px; }
     .form-section { padding: 20px 20px 0; }
     .btn-generate { width: calc(100% - 40px); margin: 24px 20px; }
+    .mode-selector { grid-template-columns: 1fr; padding: 16px 20px 0; }
+    .mode-btn { flex-direction: row; text-align: left; gap: 12px; padding: 14px 16px; }
+    .mode-btn i { font-size: 1.2rem; flex-shrink: 0; }
+    .mode-desc { display: none; }
 
     .deck-hero { flex-direction: column; }
     .deck-hero-actions { flex-direction: row; flex-wrap: wrap; min-width: unset; }

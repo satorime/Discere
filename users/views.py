@@ -149,44 +149,50 @@ def create_deck_view(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
-        text_input = request.POST.get('text_input', '').strip()
-        pdf_file = request.FILES.get('pdf_file')
-        num_cards = int(request.POST.get('num_cards', 10))
-        num_cards = max(5, min(num_cards, 20))
+        mode = request.POST.get('mode', 'manual')
 
         if not title:
             messages.error(request, 'Deck title is required.')
             return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
 
-        # Extract text from PDF or use text input
-        source_text = ''
-        if pdf_file:
-            try:
-                source_text = ai_utils.extract_pdf_text(pdf_file)
-            except Exception:
-                messages.error(request, 'Could not read the PDF. Please try again or paste text instead.')
+        if mode == 'ai':
+            text_input = request.POST.get('text_input', '').strip()
+            pdf_file = request.FILES.get('pdf_file')
+            num_cards = int(request.POST.get('num_cards', 10))
+            num_cards = max(5, min(num_cards, 20))
+
+            # Extract text from PDF or use text input
+            source_text = ''
+            if pdf_file:
+                try:
+                    source_text = ai_utils.extract_pdf_text(pdf_file)
+                except Exception:
+                    messages.error(request, 'Could not read the PDF. Please try again or paste text instead.')
+                    return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
+            elif text_input:
+                source_text = text_input
+
+            if not source_text:
+                messages.error(request, 'Please upload a PDF or paste some text.')
                 return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
-        elif text_input:
-            source_text = text_input
 
-        if not source_text:
-            messages.error(request, 'Please upload a PDF or paste some text.')
-            return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
+            # Generate flashcards with AI
+            try:
+                cards_data = ai_utils.generate_flashcards(source_text, num_cards)
+            except Exception as e:
+                messages.error(request, f'AI generation failed: {str(e)}. Check your GROQ_API_KEY.')
+                return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
 
-        # Generate flashcards with AI
-        try:
-            cards_data = ai_utils.generate_flashcards(source_text, num_cards)
-        except Exception as e:
-            messages.error(request, f'AI generation failed: {str(e)}. Check your GROQ_API_KEY.')
-            return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})
+            deck = Deck.objects.create(title=title, description=description, created_by=request.user)
+            for card in cards_data:
+                if card.get('front') and card.get('back'):
+                    Flashcard.objects.create(deck=deck, front=card['front'], back=card['back'])
+            messages.success(request, f'Deck "{title}" created with {deck.card_count()} flashcards!')
+        else:
+            # Manual mode — create blank deck, user adds cards on deck detail page
+            deck = Deck.objects.create(title=title, description=description, created_by=request.user)
+            messages.success(request, f'Deck "{title}" created! Add flashcards below.')
 
-        # Save deck and flashcards
-        deck = Deck.objects.create(title=title, description=description, created_by=request.user)
-        for card in cards_data:
-            if card.get('front') and card.get('back'):
-                Flashcard.objects.create(deck=deck, front=card['front'], back=card['back'])
-
-        messages.success(request, f'Deck "{title}" created with {deck.card_count()} flashcards!')
         return redirect('deck_detail', deck_id=deck.id)
 
     return render(request, 'users/create_deck.html', {'active_page': 'flashcards'})

@@ -12,13 +12,27 @@
 
     <div class="create-deck-card">
         <div class="create-deck-header">
-            <div class="ai-badge"><i class="fas fa-robot"></i> AI-Powered</div>
             <h1>Create a Flashcard Deck</h1>
-            <p>Upload a PDF or paste your notes — Gemini AI will generate flashcards automatically.</p>
+            <p>Start with a blank deck or let AI generate flashcards from your notes.</p>
+        </div>
+
+        <!-- Mode Selector -->
+        <div class="mode-selector">
+            <button type="button" class="mode-btn active" id="modeManualBtn" onclick="setMode('manual')">
+                <i class="fas fa-pen"></i>
+                <span class="mode-label">Create Manually</span>
+                <span class="mode-desc">Start with a blank deck and add cards yourself</span>
+            </button>
+            <button type="button" class="mode-btn" id="modeAiBtn" onclick="setMode('ai')">
+                <div class="ai-badge-inline"><i class="fas fa-robot"></i> AI</div>
+                <span class="mode-label">Generate with AI</span>
+                <span class="mode-desc">Upload a PDF or paste text — AI creates the cards</span>
+            </button>
         </div>
 
         <form method="post" enctype="multipart/form-data" id="createForm">
             {% csrf_token %}
+            <input type="hidden" name="mode" id="modeInput" value="manual">
 
             <!-- Deck Info -->
             <div class="form-section">
@@ -33,47 +47,50 @@
                 </div>
             </div>
 
-            <!-- Source Input -->
-            <div class="form-section">
-                <h3><i class="fas fa-file-alt"></i> Content Source</h3>
-                <div class="source-tabs">
-                    <button type="button" class="source-tab active" data-tab="pdf">
-                        <i class="fas fa-file-pdf"></i> Upload PDF
-                    </button>
-                    <button type="button" class="source-tab" data-tab="text">
-                        <i class="fas fa-align-left"></i> Paste Text
-                    </button>
+            <!-- AI Section (hidden by default) -->
+            <div id="aiSection" style="display:none;">
+                <!-- Source Input -->
+                <div class="form-section">
+                    <h3><i class="fas fa-file-alt"></i> Content Source</h3>
+                    <div class="source-tabs">
+                        <button type="button" class="source-tab active" data-tab="pdf">
+                            <i class="fas fa-file-pdf"></i> Upload PDF
+                        </button>
+                        <button type="button" class="source-tab" data-tab="text">
+                            <i class="fas fa-align-left"></i> Paste Text
+                        </button>
+                    </div>
+
+                    <div class="source-panel" id="panel-pdf">
+                        <label class="file-drop-area" for="pdf_file" id="dropArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span class="drop-title" id="dropTitle">Click or drag a PDF here</span>
+                            <span class="drop-hint">Supports .pdf files up to 20MB</span>
+                        </label>
+                        <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" hidden>
+                    </div>
+
+                    <div class="source-panel" id="panel-text" style="display:none;">
+                        <textarea name="text_input" id="text_input" rows="8"
+                            placeholder="Paste your notes, textbook content, or any study material here..."></textarea>
+                    </div>
                 </div>
 
-                <div class="source-panel" id="panel-pdf">
-                    <label class="file-drop-area" for="pdf_file" id="dropArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span class="drop-title" id="dropTitle">Click or drag a PDF here</span>
-                        <span class="drop-hint">Supports .pdf files up to 20MB</span>
-                    </label>
-                    <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" hidden>
-                </div>
-
-                <div class="source-panel" id="panel-text" style="display:none;">
-                    <textarea name="text_input" id="text_input" rows="8"
-                        placeholder="Paste your notes, textbook content, or any study material here..."></textarea>
-                </div>
-            </div>
-
-            <!-- AI Settings -->
-            <div class="form-section">
-                <h3><i class="fas fa-sliders-h"></i> AI Settings</h3>
-                <div class="form-group">
-                    <label for="num_cards">Number of Flashcards to Generate</label>
-                    <div class="slider-row">
-                        <input type="range" id="num_cards" name="num_cards" min="5" max="20" value="10" step="1">
-                        <span class="slider-value" id="sliderValue">10</span>
+                <!-- AI Settings -->
+                <div class="form-section">
+                    <h3><i class="fas fa-sliders-h"></i> AI Settings</h3>
+                    <div class="form-group">
+                        <label for="num_cards">Number of Flashcards to Generate</label>
+                        <div class="slider-row">
+                            <input type="range" id="num_cards" name="num_cards" min="5" max="20" value="10" step="1">
+                            <span class="slider-value" id="sliderValue">10</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <button type="submit" class="btn-generate" id="submitBtn">
-                <i class="fas fa-magic"></i> Generate Flashcards with AI
+                <i class="fas fa-pen"></i> Create Blank Deck
             </button>
         </form>
     </div>
@@ -82,6 +99,28 @@
 
 {% block extra_js %}
 <script>
+    function setMode(mode) {
+        const aiSection = document.getElementById('aiSection');
+        const submitBtn = document.getElementById('submitBtn');
+        const modeInput = document.getElementById('modeInput');
+        const manualBtn = document.getElementById('modeManualBtn');
+        const aiBtn = document.getElementById('modeAiBtn');
+
+        modeInput.value = mode;
+
+        if (mode === 'ai') {
+            aiSection.style.display = 'block';
+            submitBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Flashcards with AI';
+            manualBtn.classList.remove('active');
+            aiBtn.classList.add('active');
+        } else {
+            aiSection.style.display = 'none';
+            submitBtn.innerHTML = '<i class="fas fa-pen"></i> Create Blank Deck';
+            aiBtn.classList.remove('active');
+            manualBtn.classList.add('active');
+        }
+    }
+
     // Source tabs
     document.querySelectorAll('.source-tab').forEach(tab => {
         tab.addEventListener('click', function () {
@@ -129,8 +168,11 @@
     // Loading state on submit
     document.getElementById('createForm').addEventListener('submit', function () {
         const btn = document.getElementById('submitBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating... please wait';
-        btn.disabled = true;
+        const mode = document.getElementById('modeInput').value;
+        if (mode === 'ai') {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating... please wait';
+            btn.disabled = true;
+        }
     });
 </script>
 {% endblock %}
