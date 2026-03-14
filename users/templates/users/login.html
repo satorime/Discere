@@ -55,10 +55,10 @@
                 <a href="#" class="forgot-password"><span>Forgot Password?</span></a>
                 <button type="submit" class="submit-btn">SIGN IN</button>
                 <hr class="custom-hr-2"/>
-                <div class="google-btn">
+                <a href="{% url 'google_login' %}" class="google-btn">
                     <img src="{% static 'users/images/google-logo.png' %}" alt="Google Logo" width="20">
                     <span>Sign in with Google</span>
-                </div>
+                </a>
             </form>
 
             <div class="signup-link">
