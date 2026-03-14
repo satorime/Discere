@@ -1,12 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django import forms
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Course, Enrollment
+from .forms import SignUpForm
 
-# Login view
+
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -15,66 +19,106 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('home') 
+                return redirect('dashboard')
             else:
-                messages.error(request, "Invalid username or password.")
+                messages.error(request, 'Invalid username or password.')
         else:
-            messages.error(request, "Invalid form submission.")
+            messages.error(request, 'Invalid username or password.')
     else:
         form = AuthenticationForm()
-        
     return render(request, 'users/login.html', {'form': form})
 
-# Signup form
-class SignUpForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'form-control'}))
-    password_confirm = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password', 'class': 'form-control'}))
-
-    class Meta:
-        model = User
-        fields = ['username', 'email']
-        widgets = {
-            'username': forms.TextInput(attrs={'placeholder': 'Username', 'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'Email', 'class': 'form-control'}),
-        }
-        labels = {
-            'username': 'Username',
-            'email': 'Email Address',
-        }
-        help_texts = {
-            'username': '',
-        }
-
-    def clean_password_confirm(self):
-        password = self.cleaned_data.get("password")
-        password_confirm = self.cleaned_data.get("password_confirm")
-
-        if password != password_confirm:
-            raise forms.ValidationError("Passwords do not match")
-        return password_confirm
-
-    def save(self, commit=True):
-        user = super(SignUpForm, self).save(commit=False)
-        user.set_password(self.cleaned_data["password"])  # Hash the password before saving
-        if commit:
-            user.save()
-        return user
 
 def signup_view(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()  # This will call the form's save() method, which hashes the password
-            messages.success(request, 'Your account has been created! You can log in now.')
-            return redirect('login')  # Redirect to login page after successful signup
+            form.save()
+            messages.success(request, 'Account created successfully! You can now sign in.')
+            return redirect('login')
         else:
-            messages.error(request, 'There was an error with your submission.')
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = SignUpForm()
-    
     return render(request, 'users/signup.html', {'form': form})
 
 
-# home
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
 def home_view(request):
-    return render(request, 'users/home.html')
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return redirect('login')
+
+
+@login_required(login_url='login')
+def dashboard_view(request):
+    enrolled_courses = Enrollment.objects.filter(student=request.user).select_related('course')
+    enrolled_ids = enrolled_courses.values_list('course_id', flat=True)
+    available_courses = Course.objects.filter(is_active=True).exclude(id__in=enrolled_ids)[:3]
+    context = {
+        'enrolled_courses': enrolled_courses,
+        'available_courses': available_courses,
+        'enrolled_count': enrolled_courses.count(),
+        'completed_count': enrolled_courses.filter(progress=100).count(),
+        'active_page': 'dashboard',
+    }
+    return render(request, 'users/dashboard.html', context)
+
+
+@login_required(login_url='login')
+def courses_view(request):
+    category = request.GET.get('category', '')
+    courses = Course.objects.filter(is_active=True)
+    if category:
+        courses = courses.filter(category=category)
+    enrolled_ids = list(Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True))
+    context = {
+        'courses': courses,
+        'enrolled_ids': enrolled_ids,
+        'selected_category': category,
+        'categories': Course.CATEGORY_CHOICES,
+        'active_page': 'courses',
+    }
+    return render(request, 'users/courses.html', context)
+
+
+@login_required(login_url='login')
+def course_detail_view(request, course_id):
+    course = get_object_or_404(Course, id=course_id, is_active=True)
+    enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
+    context = {
+        'course': course,
+        'enrollment': enrollment,
+        'active_page': 'courses',
+    }
+    return render(request, 'users/course_detail.html', context)
+
+
+@login_required(login_url='login')
+def enroll_view(request, course_id):
+    course = get_object_or_404(Course, id=course_id, is_active=True)
+    enrollment, created = Enrollment.objects.get_or_create(student=request.user, course=course)
+    if created:
+        messages.success(request, f'Successfully enrolled in "{course.title}"!')
+    else:
+        messages.info(request, f'You are already enrolled in "{course.title}".')
+    return redirect('course_detail', course_id=course_id)
+
+
+@login_required(login_url='login')
+def profile_view(request):
+    if request.method == 'POST':
+        user = request.user
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+        user.email = request.POST.get('email', user.email)
+        user.save()
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('profile')
+    return render(request, 'users/profile.html', {'user': request.user, 'active_page': 'profile'})

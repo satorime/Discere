@@ -1,0 +1,93 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - Discere{% endblock %}
+{% block header_title %}Course Detail{% endblock %}
+
+{% block content %}
+
+<div class="course-detail-container">
+    <!-- Back Link -->
+    <a href="{% url 'courses' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Courses
+    </a>
+
+    <!-- Course Hero -->
+    <div class="course-hero">
+        <div class="course-hero-info">
+            <span class="course-card-badge badge-{{ course.category }}">{{ course.get_category_display }}</span>
+            <h1>{{ course.title }}</h1>
+            <p class="course-hero-desc">{{ course.description }}</p>
+            <div class="course-meta-row">
+                <span><i class="fas fa-chalkboard-teacher"></i>
+                    {{ course.instructor.get_full_name|default:course.instructor.username }}</span>
+                <span><i class="fas fa-users"></i> {{ course.enrolled_count }} students</span>
+                <span><i class="fas fa-calendar-alt"></i> {{ course.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        <div class="course-hero-action">
+            {% if enrollment %}
+            <div class="enrolled-status">
+                <div class="enrolled-check"><i class="fas fa-check-circle"></i> Enrolled</div>
+                <div class="course-progress">
+                    <div class="progress-header">
+                        <span>Your Progress</span>
+                        <span>{{ enrollment.progress }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ enrollment.progress }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <form method="post" action="{% url 'enroll' course.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-enroll-large">
+                    <i class="fas fa-plus-circle"></i> Enroll Now
+                </button>
+            </form>
+            <p class="enroll-note">Free enrollment. Start learning today!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Course Content Placeholder -->
+    <div class="course-content-section">
+        <h2>About This Course</h2>
+        <div class="course-about-card">
+            <p>{{ course.description }}</p>
+        </div>
+
+        {% if enrollment %}
+        <h2 style="margin-top: 2rem;">Course Materials</h2>
+        <div class="course-modules">
+            <div class="module-placeholder">
+                <div class="module-icon"><i class="fas fa-play-circle"></i></div>
+                <div class="module-info">
+                    <h4>Introduction</h4>
+                    <p>Getting started with the course</p>
+                </div>
+                <span class="module-status"><i class="fas fa-lock-open"></i> Available</span>
+            </div>
+            <div class="module-placeholder locked">
+                <div class="module-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="module-info">
+                    <h4>Module 1</h4>
+                    <p>Core concepts and fundamentals</p>
+                </div>
+                <span class="module-status"><i class="fas fa-lock"></i> Coming Soon</span>
+            </div>
+            <div class="module-placeholder locked">
+                <div class="module-icon"><i class="fas fa-tasks"></i></div>
+                <div class="module-info">
+                    <h4>Module 2</h4>
+                    <p>Advanced topics and practice</p>
+                </div>
+                <span class="module-status"><i class="fas fa-lock"></i> Coming Soon</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

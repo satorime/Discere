@@ -1,0 +1,67 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Courses - Discere{% endblock %}
+{% block header_title %}Courses{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>All Courses</h1>
+    <p>Explore our library and find the perfect course for you.</p>
+</div>
+
+<!-- Category Filter -->
+<div class="filter-bar">
+    <span class="filter-label"><i class="fas fa-filter"></i> Filter:</span>
+    <div class="filter-chips">
+        <a href="{% url 'courses' %}" class="chip {% if not selected_category %}chip-active{% endif %}">All</a>
+        {% for value, label in categories %}
+        <a href="{% url 'courses' %}?category={{ value }}"
+           class="chip {% if selected_category == value %}chip-active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Courses Grid -->
+{% if courses %}
+<div class="courses-grid courses-grid-wide">
+    {% for course in courses %}
+    <div class="course-card">
+        <div class="course-card-badge badge-{{ course.category }}">
+            {{ course.get_category_display }}
+        </div>
+        <div class="course-card-body">
+            <h3>{{ course.title }}</h3>
+            <p class="course-desc">{{ course.description|truncatechars:100 }}</p>
+            <p class="course-instructor">
+                <i class="fas fa-chalkboard-teacher"></i>
+                {{ course.instructor.get_full_name|default:course.instructor.username }}
+            </p>
+            <p class="course-meta">
+                <i class="fas fa-users"></i> {{ course.enrolled_count }} enrolled
+            </p>
+        </div>
+        <div class="course-card-footer">
+            {% if course.id in enrolled_ids %}
+            <span class="enrolled-badge"><i class="fas fa-check"></i> Enrolled</span>
+            <a href="{% url 'course_detail' course.id %}" class="btn-continue">Continue</a>
+            {% else %}
+            <a href="{% url 'course_detail' course.id %}" class="btn-view">View Course</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-search"></i></div>
+    <h3>No courses found</h3>
+    <p>{% if selected_category %}No courses in this category yet.{% else %}No courses available yet. Check back soon!{% endif %}</p>
+    {% if selected_category %}
+    <a href="{% url 'courses' %}" class="btn-primary">View All Courses</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

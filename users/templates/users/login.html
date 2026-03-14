@@ -7,58 +7,75 @@
     <title>Sign In - Discere</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Anybody:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Use Django's static template tag for your local CSS file -->
     <link rel="stylesheet" href="{% static 'users/css/login-css.css' %}">
 </head>
-
 <body>
     <div class="container">
         <div class="left-section">
-            <img src="{% static 'users/images/discere-logo.png' %}" alt="Logo">
+            <img src="{% static 'users/images/discere-logo.png' %}" alt="Discere Logo">
             <h1>Welcome to Discere!</h1>
-			
-			<i class="fas fa-ellipsis-h"></i>
-			<hr class="custom-hr-3"/>
-			<span> To stay connected with us, <br> please sign in with your <br>personal information.</span>
-			<hr class="custom-hr-3"/>
-			<i class="fas fa-ellipsis-h"></i>
+            <i class="fas fa-ellipsis-h"></i>
+            <hr class="custom-hr-3"/>
+            <span>To stay connected with us, <br>please sign in with your <br>personal information.</span>
+            <hr class="custom-hr-3"/>
+            <i class="fas fa-ellipsis-h"></i>
         </div>
-		
+
         <div class="right-section">
             <h1 class="auth-header">Sign In to Discere</h1>
-			<hr class="custom-hr"/>
+            <hr class="custom-hr"/>
 
-            <form method="post">
-                {% csrf_token %}
-				<span class="form-label"> Username </span>
-                <div class="input-icon">
-                    <i class="fa fa-envelope"></i>
-                    <input type="text" name="username" placeholder="Enter your username">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+                    {{ message }}
                 </div>
-				
-				<span class="form-label"> PASSWORD </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                <span class="form-label">USERNAME</span>
+                <div class="input-icon">
+                    <i class="fa fa-user"></i>
+                    <input type="text" name="username" placeholder="Enter your username" autocomplete="username" required>
+                </div>
+
+                <span class="form-label">PASSWORD</span>
                 <div class="input-icon">
                     <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Enter your password">
-					<i class="fas fa-eye-slash"></i>
+                    <input type="password" name="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required>
+                    <i class="fas fa-eye-slash toggle-password" id="toggleLoginPassword" title="Show/Hide password"></i>
                 </div>
-				
+
                 <a href="#" class="forgot-password"><span>Forgot Password?</span></a>
-                <form method="post" action ="{% url 'login' %}">
-                    {% csrf_token %}
-				    <button type="submit" class="submit-btn">SIGN IN</button>
-				</form>
-				<hr class="custom-hr-2"/>
+                <button type="submit" class="submit-btn">SIGN IN</button>
+                <hr class="custom-hr-2"/>
                 <div class="google-btn">
                     <img src="{% static 'users/images/google-logo.png' %}" alt="Google Logo" width="20">
                     <span>Sign in with Google</span>
                 </div>
             </form>
-			
+
             <div class="signup-link">
-                Don't have an account? &nbsp&nbsp&nbsp <a href="{% url 'signup' %}">Sign up</a>
+                Don't have an account? &nbsp;&nbsp;&nbsp;<a href="{% url 'signup' %}">Sign up</a>
             </div>
         </div>
     </div>
+
+    <script>
+        const toggleBtn = document.getElementById('toggleLoginPassword');
+        const passwordInput = document.getElementById('loginPassword');
+        toggleBtn.addEventListener('click', function () {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            toggleBtn.classList.toggle('fa-eye-slash', !isPassword);
+            toggleBtn.classList.toggle('fa-eye', isPassword);
+        });
+    </script>
 </body>
 </html>

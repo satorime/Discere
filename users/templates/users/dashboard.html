@@ -1,0 +1,135 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Discere{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+    <div class="welcome-text">
+        <h1>Welcome back, {{ request.user.first_name|default:request.user.username }}!</h1>
+        <p>Continue your learning journey today. You're doing great!</p>
+    </div>
+    <div class="welcome-illustration">
+        <i class="fas fa-graduation-cap"></i>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue">
+            <i class="fas fa-book-open"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ enrolled_count }}</h3>
+            <p>Enrolled Courses</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ completed_count }}</h3>
+            <p>Completed</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-orange">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ enrolled_count|add:enrolled_count }}</h3>
+            <p>Hours Learned</p>
+        </div>
+    </div>
+</div>
+
+<!-- My Courses -->
+<section class="section">
+    <div class="section-header">
+        <h2>My Courses</h2>
+        {% if enrolled_courses %}
+        <a href="{% url 'courses' %}" class="section-link">View All Courses →</a>
+        {% endif %}
+    </div>
+
+    {% if enrolled_courses %}
+    <div class="courses-grid">
+        {% for enrollment in enrolled_courses %}
+        <div class="course-card">
+            <div class="course-card-badge badge-{{ enrollment.course.category }}">
+                {{ enrollment.course.get_category_display }}
+            </div>
+            <div class="course-card-body">
+                <h3>{{ enrollment.course.title }}</h3>
+                <p class="course-desc">{{ enrollment.course.description|truncatechars:90 }}</p>
+                <p class="course-instructor">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    {{ enrollment.course.instructor.get_full_name|default:enrollment.course.instructor.username }}
+                </p>
+            </div>
+            <div class="course-progress">
+                <div class="progress-header">
+                    <span>Progress</span>
+                    <span>{{ enrollment.progress }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ enrollment.progress }}%"></div>
+                </div>
+            </div>
+            <div class="course-card-footer">
+                <a href="{% url 'course_detail' enrollment.course.id %}" class="btn-continue">
+                    <i class="fas fa-play-circle"></i> Continue
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-book"></i></div>
+        <h3>No courses yet</h3>
+        <p>You haven't enrolled in any courses. Start your learning journey!</p>
+        <a href="{% url 'courses' %}" class="btn-primary">Browse Courses</a>
+    </div>
+    {% endif %}
+</section>
+
+<!-- Discover Courses -->
+{% if available_courses %}
+<section class="section">
+    <div class="section-header">
+        <h2>Discover Courses</h2>
+        <a href="{% url 'courses' %}" class="section-link">See All →</a>
+    </div>
+    <div class="courses-grid">
+        {% for course in available_courses %}
+        <div class="course-card">
+            <div class="course-card-badge badge-{{ course.category }}">
+                {{ course.get_category_display }}
+            </div>
+            <div class="course-card-body">
+                <h3>{{ course.title }}</h3>
+                <p class="course-desc">{{ course.description|truncatechars:90 }}</p>
+                <p class="course-instructor">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    {{ course.instructor.get_full_name|default:course.instructor.username }}
+                </p>
+                <p class="course-meta">
+                    <i class="fas fa-users"></i> {{ course.enrolled_count }} enrolled
+                </p>
+            </div>
+            <div class="course-card-footer">
+                <a href="{% url 'course_detail' course.id %}" class="btn-view">View Course</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

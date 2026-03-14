@@ -1,21 +1,35 @@
+/* =====================
+   Base
+   ===================== */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
     margin: 0;
     padding: 0;
     background-image: url('/static/users/images/gradient-bg.png');
-    background-size: cover; 
-    background-position: center; 
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
-	font-family: 'Anybody', sans-serif;
-	user-select: none;
+    font-family: 'Anybody', sans-serif;
+    user-select: none;
+    min-height: 100vh;
 }
 
+/* =====================
+   Layout
+   ===================== */
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 24px;
+    gap: 0;
 }
 
+/* =====================
+   Left Section (Branding)
+   ===================== */
 .left-section {
     flex: 1;
     display: flex;
@@ -23,184 +37,199 @@ body {
     justify-content: center;
     align-items: center;
     color: #38ef7d;
-	margin-left: 200px;
-	margin-right: 150px;
+    padding: 40px;
+    max-width: 480px;
 }
 
-.left-section .fa-ellipsis-h{
-	color: white;
-	font-size: 30px;
+.left-section .fa-ellipsis-h {
+    color: white;
+    font-size: 30px;
 }
 
 .left-section img {
-    width: 120px;
-	margin-bottom: 20px;
+    width: 110px;
+    margin-bottom: 20px;
 }
 
 .left-section h1 {
-    font-size: 50px;
-    margin: 20px 0;
-	color: white;
-	text-align: center;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    margin: 16px 0;
+    color: white;
+    text-align: center;
 }
 
 .left-section span {
-	color: white;
-	text-align: center;
-	line-height: 1.2;
-	margin-bottom: 20px;
-	margin-top: 20px;
-	font-size: 20px;
-	letter-spacing: 0.5px;
+    color: white;
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    letter-spacing: 0.5px;
 }
 
-.left-section text {
-	margin-top: 20px;
-	color: white;
-	text-align: center;
-	line-height: 1.2;
-	margin-bottom: 10px;
-	margin-top: 10px;
-	font-size: 20px;
-	font-weight: bold;
-	letter-spacing: 2px;
-}
-
+/* =====================
+   Right Section (Form)
+   ===================== */
 .right-section {
     flex: 1;
     background-color: #faf9f6;
-    padding: 50px;
+    padding: clamp(28px, 4vw, 52px);
     border-radius: 30px;
-	margin-right: 200px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
 }
 
-.right-section h1{
+.right-section h1 {
     color: #0b3316;
-    font-size: 2rem;
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
     margin-bottom: 20px;
 }
 
 .right-section .auth-header {
-	text-align: center;
-	margin: 0;
-	padding: 0;
+    text-align: center;
+    margin: 0;
+    padding: 0;
 }
 
+/* =====================
+   Dividers
+   ===================== */
 .custom-hr {
     width: 80px;
     height: 8px;
     background-color: #004927;
     border: none;
-	border-radius: 3px;
+    border-radius: 3px;
+    margin: 0 auto 20px;
 }
 
 .custom-hr-2 {
     width: 95%;
-	height: 2px;
+    height: 2px;
     background-color: #ccc;
     border: none;
+    margin: 4px 0;
 }
+
 .custom-hr-3 {
     width: 80%;
-	height: 1px;
+    height: 1px;
     background-color: white;
     border: none;
 }
 
+/* =====================
+   Form
+   ===================== */
 form {
     display: flex;
     flex-direction: column;
 }
 
-form input {
-    padding: 12px;
-    font-size: 18px;
-    border: 1px solid #ccc;
-	border-radius: 15px;
-}
-
 .form-label {
-	margin-left: 15px;
-	margin-bottom: 10px;
-	margin-top: 20px;
-	font-size: 20px;
-	color: #757575;
+    margin-left: 15px;
+    margin-bottom: 8px;
+    margin-top: 18px;
+    font-size: clamp(0.85rem, 1.2vw, 1rem);
+    color: #757575;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .input-icon {
     display: flex;
     align-items: center;
-    border: 1px solid #757575;
+    border: 1.5px solid #757575;
     border-radius: 15px;
-	background-color: white;
+    background-color: white;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.input-icon input {
-    border: none;
-    padding: 18px;
-    font-size: 18px;
-    width: 100%;
-	height: 19px;
-    outline: none;
-}
-
-.input-icon .fa-envelope,
-.input-icon .fa-lock {
-	display: flex;
-    align-items: center;
-    border-right: 1px solid grey;
-	border-radius: 20px 0 0 20px;
-}
-
-.input-icon .fa-lock {
-	padding-left: 19px;
-	padding-right: 19px;
-}
-
-.input-icon .fa-eye-slash{
-	display: flex;
-    align-items: center;
-	border-radius: 15px;
+.input-icon:focus-within {
+    border-color: #025d30;
+    box-shadow: 0 0 0 3px rgba(2, 93, 48, 0.10);
 }
 
 .input-icon i {
-	padding: 12px 18px;
-	color: #757575;
+    padding: 12px 18px;
+    color: #757575;
     background-color: white;
     border-radius: 8px 0 0 8px;
-	height: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
 }
 
+.input-icon .fa-envelope,
+.input-icon .fa-lock,
+.input-icon .fa-user {
+    border-right: 1px solid #ccc;
+    border-radius: 15px 0 0 15px;
+}
+
+.input-icon .fa-lock {
+    padding-left: 19px;
+    padding-right: 19px;
+}
+
+.input-icon .toggle-password {
+    padding: 12px 14px;
+    cursor: pointer;
+    color: #757575;
+    border-radius: 0 15px 15px 0;
+    transition: color 0.2s;
+    border: none;
+    border-left: none;
+    height: auto;
+}
+
+.input-icon .toggle-password:hover { color: #025d30; }
+
+.input-icon input {
+    flex: 1;
+    border: none;
+    padding: 16px;
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
+    width: 100%;
+    height: auto;
+    outline: none;
+    background: transparent;
+    font-family: 'Anybody', sans-serif;
+    color: #1a1a2e;
+}
+
+/* =====================
+   Buttons
+   ===================== */
 .submit-btn {
     font-family: 'Anybody', sans-serif;
     background-color: #025d30;
     color: white;
-    padding: 12px;
+    padding: 14px;
     border: none;
     border-radius: 15px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: clamp(0.9rem, 1.2vw, 1.1rem);
     letter-spacing: 1px;
-    height: 50px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+    margin-top: 14px;
+    margin-bottom: 12px;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    font-weight: 700;
 }
 
 .submit-btn:hover {
-    border: 2px solid white;
     background-color: #002f19;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 93, 48, 0.3);
 }
 
-.right-section .other-label {
-	text-align: center;
-	color: #757575;
-	margin-bottom: 15px;
-}
+.submit-btn:active { transform: translateY(0); }
 
 .google-btn {
-    margin-top: 15px;
-    padding: 10px;
+    margin-top: 10px;
+    padding: 12px;
     border: 2px solid #ccc;
     border-radius: 15px;
     display: flex;
@@ -208,50 +237,115 @@ form input {
     justify-content: center;
     cursor: pointer;
     background-color: white;
-	height: 30px;
-    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    font-size: 0.95rem;
 }
 
 .google-btn:hover {
-    border: 2px solid #025d30;
-    background-color: #eee;
-	font-weight: semi-bold;
+    border-color: #025d30;
+    background-color: #f0f0f0;
 }
 
-.google-btn img {
-    margin-right: 10px;
-}
+.google-btn img { margin-right: 10px; }
 
+/* =====================
+   Links
+   ===================== */
 .forgot-password {
     text-align: right;
     margin: 10px 0;
     color: #007f5f;
     text-decoration: none;
-    font-size: 15px;
-    position: relative; 
-    transition: color 0.3s ease; 
+    font-size: 0.88rem;
+    transition: color 0.3s ease;
 }
 
 .forgot-password span:hover {
     color: #005a4b;
-    border-bottom: 2px solid #007f5f; 
-    padding-bottom: 2px; 
+    border-bottom: 2px solid #007f5f;
+    padding-bottom: 2px;
 }
 
 .signup-link {
-    margin-top: 20px;
-    font-size: 15px;
+    margin-top: 18px;
+    font-size: 0.88rem;
     text-align: center;
+    color: #495057;
 }
 
 .signup-link a {
     color: #007f5f;
     text-decoration: none;
-	transition: color 0.3s ease; 
+    font-weight: 700;
+    transition: color 0.3s ease;
 }
 
 .signup-link a:hover {
     color: #005a4b;
-    border-bottom: 2px solid #007f5f; 
-    padding-bottom: 2px; 
+    border-bottom: 2px solid #007f5f;
+    padding-bottom: 2px;
+}
+
+/* =====================
+   Messages / Alerts
+   ===================== */
+.messages {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.message-error { background: #fde8e8; color: #c53030; border: 1px solid #f5c6cb; }
+.message-success { background: #e6f9f0; color: #025d30; border: 1px solid #b8e8cc; }
+
+/* =====================
+   Responsive: Tablet (≤ 900px)
+   ===================== */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+        padding: 32px 16px;
+    }
+
+    .left-section {
+        max-width: 100%;
+        width: 100%;
+        padding: 24px 20px;
+    }
+
+    .left-section h1 { font-size: 1.8rem; }
+    .left-section span { font-size: 1rem; }
+
+    .right-section {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 20px;
+    }
+}
+
+/* =====================
+   Responsive: Mobile (≤ 480px)
+   ===================== */
+@media (max-width: 480px) {
+    .container { padding: 16px; gap: 16px; }
+    .left-section { padding: 20px 12px; }
+    .left-section img { width: 80px; }
+    .right-section { padding: 24px 18px; border-radius: 16px; }
+    .left-section h1 { font-size: 1.5rem; }
+
+    /* Hide decorative elements on very small screens */
+    .custom-hr-3, .left-section .fa-ellipsis-h { display: none; }
+    .left-section span { display: none; }
 }
