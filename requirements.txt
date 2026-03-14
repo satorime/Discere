@@ -7,3 +7,4 @@ python-dotenv==1.2.2
 django-allauth==65.15.0
 PyJWT==2.12.1
 cryptography==46.0.5
+requests==2.32.3
