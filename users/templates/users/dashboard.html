@@ -39,11 +39,11 @@
     </div>
     <div class="stat-card">
         <div class="stat-icon stat-icon-orange">
-            <i class="fas fa-clock"></i>
+            <i class="fas fa-layer-group"></i>
         </div>
         <div class="stat-info">
-            <h3>{{ enrolled_count|add:enrolled_count }}</h3>
-            <p>Hours Learned</p>
+            <h3>{{ deck_count }}</h3>
+            <p>Flashcard Decks</p>
         </div>
     </div>
 </div>
@@ -131,5 +131,38 @@
     </div>
 </section>
 {% endif %}
+
+<!-- Recent Flashcard Decks -->
+<section class="section">
+    <div class="section-header">
+        <h2>My Flashcard Decks</h2>
+        <a href="{% url 'decks' %}" class="section-link">View All →</a>
+    </div>
+    {% if recent_decks %}
+    <div class="courses-grid">
+        {% for deck in recent_decks %}
+        <div class="course-card">
+            <div class="course-card-badge badge-programming">Flashcards</div>
+            <div class="course-card-body">
+                <h3>{{ deck.title }}</h3>
+                <p class="course-desc">{{ deck.description|default:"No description"|truncatechars:80 }}</p>
+                <p class="course-meta"><i class="fas fa-clone"></i> {{ deck.card_count }} cards</p>
+            </div>
+            <div class="course-card-footer">
+                <a href="{% url 'study' deck.id %}" class="btn-continue"><i class="fas fa-play"></i> Study</a>
+                <a href="{% url 'deck_detail' deck.id %}" class="btn-view">Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-layer-group"></i></div>
+        <h3>No flashcard decks yet</h3>
+        <p>Upload a PDF or paste text and let AI generate flashcards for you!</p>
+        <a href="{% url 'create_deck' %}" class="btn-primary"><i class="fas fa-plus"></i> Create Deck</a>
+    </div>
+    {% endif %}
+</section>
 
 {% endblock %}

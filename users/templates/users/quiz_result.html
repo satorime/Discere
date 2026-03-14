@@ -1,0 +1,80 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+{% block title %}Quiz Results - Discere{% endblock %}
+{% block header_title %}Quiz Results{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/css/study.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="result-container">
+
+    <!-- Score Card -->
+    <div class="result-score-card {% if attempt.percentage >= 80 %}score-great{% elif attempt.percentage >= 50 %}score-ok{% else %}score-low{% endif %}">
+        <div class="score-circle">
+            <span class="score-pct">{{ attempt.percentage }}%</span>
+            <span class="score-label">Score</span>
+        </div>
+        <div class="score-info">
+            <h1>
+                {% if attempt.percentage >= 80 %}Excellent! 🎉
+                {% elif attempt.percentage >= 50 %}Good effort! 💪
+                {% else %}Keep studying! 📚
+                {% endif %}
+            </h1>
+            <p>You got <strong>{{ attempt.score }}</strong> out of <strong>{{ attempt.total }}</strong> correct.</p>
+            <p class="score-date">Completed {{ attempt.completed_at|date:"M d, Y · H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Review Answers -->
+    <div class="result-review">
+        <h2>Answer Review</h2>
+        {% for q_id, data in answers.items %}
+        <div class="review-item {% if data.is_correct %}review-correct{% else %}review-wrong{% endif %}">
+            <div class="review-header">
+                <span class="review-icon">
+                    {% if data.is_correct %}<i class="fas fa-check-circle"></i>{% else %}<i class="fas fa-times-circle"></i>{% endif %}
+                </span>
+                <p class="review-question">{{ data.question }}</p>
+            </div>
+            <div class="review-options">
+                {% for opt in 'ABCD' %}
+                <div class="review-option
+                    {% if opt == data.correct %}correct-opt{% endif %}
+                    {% if opt == data.selected and not data.is_correct %}wrong-opt{% endif %}">
+                    <span class="opt-letter">{{ opt }}</span>
+                    <span>
+                        {% if opt == 'A' %}{{ data.option_a }}
+                        {% elif opt == 'B' %}{{ data.option_b }}
+                        {% elif opt == 'C' %}{{ data.option_c }}
+                        {% else %}{{ data.option_d }}{% endif %}
+                    </span>
+                    {% if opt == data.correct %}<i class="fas fa-check"></i>{% endif %}
+                    {% if opt == data.selected and not data.is_correct %}<i class="fas fa-times"></i>{% endif %}
+                </div>
+                {% endfor %}
+                {% if data.explanation %}
+                <div class="review-explanation">
+                    <i class="fas fa-lightbulb"></i> {{ data.explanation }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Actions -->
+    <div class="result-actions">
+        <a href="{% url 'take_quiz' attempt.quiz.id %}" class="btn-continue">
+            <i class="fas fa-redo"></i> Retake Quiz
+        </a>
+        <a href="{% url 'study' attempt.quiz.deck.id %}" class="btn-view">
+            <i class="fas fa-play"></i> Study Deck
+        </a>
+        <a href="{% url 'deck_detail' attempt.quiz.deck.id %}" class="btn-view">
+            <i class="fas fa-arrow-left"></i> Back to Deck
+        </a>
+    </div>
+</div>
+{% endblock %}

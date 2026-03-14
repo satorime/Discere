@@ -1,0 +1,160 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+{% block title %}Study: {{ deck.title }} - Discere{% endblock %}
+{% block header_title %}Study Mode{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/css/study.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="study-container">
+    <div class="study-header">
+        <a href="{% url 'deck_detail' deck.id %}" class="back-link"><i class="fas fa-arrow-left"></i> {{ deck.title }}</a>
+        <div class="study-progress-wrap">
+            <div class="study-progress-bar">
+                <div class="study-progress-fill" id="progressFill"></div>
+            </div>
+            <span class="study-progress-text" id="progressText">0 / 0</span>
+        </div>
+    </div>
+
+    <!-- Study Area -->
+    <div class="study-area" id="studyArea">
+
+        <!-- Flashcard -->
+        <div class="flashcard-wrap" id="flashcardWrap">
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+                <div class="flashcard-inner" id="flashcardInner">
+                    <div class="flashcard-face flashcard-front">
+                        <span class="face-label">Question</span>
+                        <p id="cardFront"></p>
+                        <span class="flip-hint"><i class="fas fa-sync-alt"></i> Click to reveal answer</span>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <span class="face-label face-label-back">Answer</span>
+                        <p id="cardBack"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons (shown after flip) -->
+        <div class="study-actions" id="studyActions" style="display:none;">
+            <button class="btn-study-again" onclick="markCard('learning')">
+                <i class="fas fa-redo"></i> Study Again
+            </button>
+            <button class="btn-know-it" onclick="markCard('mastered')">
+                <i class="fas fa-check"></i> Know It!
+            </button>
+        </div>
+
+        <!-- Flip hint shown before flip -->
+        <div class="pre-flip-hint" id="preFlipHint">
+            <button class="btn-flip" onclick="flipCard()"><i class="fas fa-sync-alt"></i> Flip Card</button>
+        </div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div class="study-complete" id="studyComplete" style="display:none;">
+        <div class="complete-icon"><i class="fas fa-trophy"></i></div>
+        <h2>Session Complete!</h2>
+        <p id="completeStats"></p>
+        <div class="complete-actions">
+            <button class="btn-primary" onclick="restartStudy()"><i class="fas fa-redo"></i> Study Again</button>
+            <a href="{% url 'generate_quiz' deck.id %}" class="btn-quiz-large">
+                <i class="fas fa-question-circle"></i> Take a Quiz
+            </a>
+            <a href="{% url 'deck_detail' deck.id %}" class="btn-view">Back to Deck</a>
+        </div>
+    </div>
+
+    <!-- Card counter -->
+    <div class="card-counter" id="cardCounter">
+        <span id="counterText"></span>
+    </div>
+</div>
+
+<script>
+const CARDS = {{ flashcards_json|safe }};
+const CSRF = '{{ csrf_token }}';
+let currentIndex = 0;
+let isFlipped = false;
+let masteredCount = 0;
+let studyAgainCount = 0;
+const order = [...Array(CARDS.length).keys()];
+
+function updateProgress() {
+    const pct = CARDS.length > 0 ? Math.round((currentIndex / CARDS.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `${currentIndex} / ${CARDS.length}`;
+    document.getElementById('counterText').textContent = `Card ${Math.min(currentIndex + 1, CARDS.length)} of ${CARDS.length}`;
+}
+
+function showCard(index) {
+    if (index >= CARDS.length) { showComplete(); return; }
+    const card = CARDS[order[index]];
+    document.getElementById('cardFront').textContent = card.front;
+    document.getElementById('cardBack').textContent = card.back;
+    // Reset flip
+    isFlipped = false;
+    document.getElementById('flashcardInner').style.transform = 'rotateY(0deg)';
+    document.getElementById('studyActions').style.display = 'none';
+    document.getElementById('preFlipHint').style.display = 'flex';
+    updateProgress();
+}
+
+function flipCard() {
+    if (isFlipped) return;
+    isFlipped = true;
+    document.getElementById('flashcardInner').style.transform = 'rotateY(180deg)';
+    document.getElementById('preFlipHint').style.display = 'none';
+    document.getElementById('studyActions').style.display = 'flex';
+}
+
+function markCard(status) {
+    const card = CARDS[order[currentIndex]];
+    if (status === 'mastered') masteredCount++;
+    else studyAgainCount++;
+
+    // Save progress via AJAX
+    fetch(`/flashcards/card/${card.id}/progress/`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': CSRF, 'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `status=${status}`
+    });
+
+    currentIndex++;
+    showCard(currentIndex);
+}
+
+function showComplete() {
+    document.getElementById('studyArea').style.display = 'none';
+    document.getElementById('cardCounter').style.display = 'none';
+    document.getElementById('studyComplete').style.display = 'flex';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressText').textContent = `${CARDS.length} / ${CARDS.length}`;
+    document.getElementById('completeStats').textContent =
+        `You mastered ${masteredCount} cards and need to review ${studyAgainCount}.`;
+}
+
+function restartStudy() {
+    currentIndex = 0; masteredCount = 0; studyAgainCount = 0;
+    // Shuffle
+    for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+    }
+    document.getElementById('studyComplete').style.display = 'none';
+    document.getElementById('studyArea').style.display = 'block';
+    document.getElementById('cardCounter').style.display = 'block';
+    showCard(0);
+}
+
+// Init
+if (CARDS.length > 0) {
+    showCard(0);
+} else {
+    document.getElementById('studyArea').innerHTML = '<p style="text-align:center;color:#6c757d;">No flashcards in this deck.</p>';
+}
+</script>
+{% endblock %}

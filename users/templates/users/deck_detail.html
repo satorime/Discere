@@ -1,0 +1,82 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+{% block title %}{{ deck.title }} - Discere{% endblock %}
+{% block header_title %}{{ deck.title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/css/study.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="deck-detail-container">
+    <a href="{% url 'decks' %}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Decks</a>
+
+    <!-- Deck Header -->
+    <div class="deck-hero">
+        <div class="deck-hero-info">
+            <h1>{{ deck.title }}</h1>
+            {% if deck.description %}<p class="deck-desc">{{ deck.description }}</p>{% endif %}
+            <div class="deck-meta-row">
+                <span><i class="fas fa-clone"></i> {{ deck.card_count }} cards</span>
+                <span><i class="fas fa-star"></i> {{ mastered }} mastered</span>
+                <span><i class="fas fa-calendar-alt"></i> {{ deck.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        <div class="deck-hero-actions">
+            <a href="{% url 'study' deck.id %}" class="btn-enroll-large">
+                <i class="fas fa-play-circle"></i> Study Now
+            </a>
+            <a href="{% url 'generate_quiz' deck.id %}" class="btn-quiz-large">
+                <i class="fas fa-question-circle"></i> Generate Quiz
+            </a>
+            <a href="{% url 'delete_deck' deck.id %}"
+               onclick="return confirm('Delete this deck and all its flashcards?')"
+               class="btn-delete-small">
+                <i class="fas fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+    <!-- Past Quizzes -->
+    {% if quizzes %}
+    <div class="deck-section">
+        <h2>Past Quizzes</h2>
+        <div class="quiz-list">
+            {% for quiz in quizzes %}
+            <div class="quiz-item">
+                <div class="quiz-item-info">
+                    <i class="fas fa-question-circle"></i>
+                    <div>
+                        <strong>{{ quiz.title }}</strong>
+                        <span>{{ quiz.question_count }} questions &middot; {{ quiz.created_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+                <a href="{% url 'take_quiz' quiz.id %}" class="btn-view">Take Quiz</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Flashcards List -->
+    <div class="deck-section">
+        <h2>All Flashcards <span class="card-count-badge">{{ deck.card_count }}</span></h2>
+        <div class="flashcard-list">
+            {% for card in flashcards %}
+            <div class="flashcard-list-item">
+                <div class="flashcard-list-front">
+                    <span class="card-label">Q</span>
+                    <p>{{ card.front }}</p>
+                </div>
+                <div class="flashcard-list-divider"></div>
+                <div class="flashcard-list-back">
+                    <span class="card-label card-label-back">A</span>
+                    <p>{{ card.back }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p class="no-cards">No flashcards in this deck.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

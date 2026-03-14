@@ -1,0 +1,42 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+{% block title %}Flashcard Decks - Discere{% endblock %}
+{% block header_title %}Flashcard Decks{% endblock %}
+
+{% block content %}
+<div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+    <div>
+        <h1>My Flashcard Decks</h1>
+        <p>Upload a PDF or paste text — AI will generate flashcards and quizzes instantly.</p>
+    </div>
+    <a href="{% url 'create_deck' %}" class="btn-primary"><i class="fas fa-plus"></i> New Deck</a>
+</div>
+
+{% if decks %}
+<div class="courses-grid courses-grid-wide">
+    {% for deck in decks %}
+    <div class="course-card">
+        <div class="course-card-badge badge-programming">
+            <i class="fas fa-clone"></i> {{ deck.card_count }} cards
+        </div>
+        <div class="course-card-body">
+            <h3>{{ deck.title }}</h3>
+            <p class="course-desc">{{ deck.description|default:"No description"|truncatechars:90 }}</p>
+            <p class="course-meta"><i class="fas fa-calendar-alt"></i> {{ deck.updated_at|date:"M d, Y" }}</p>
+        </div>
+        <div class="course-card-footer" style="flex-wrap:wrap; gap:8px;">
+            <a href="{% url 'study' deck.id %}" class="btn-continue"><i class="fas fa-play"></i> Study</a>
+            <a href="{% url 'deck_detail' deck.id %}" class="btn-view">Details</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="fas fa-layer-group"></i></div>
+    <h3>No decks yet</h3>
+    <p>Create your first AI-powered flashcard deck by uploading a PDF or pasting your notes.</p>
+    <a href="{% url 'create_deck' %}" class="btn-primary"><i class="fas fa-plus"></i> Create First Deck</a>
+</div>
+{% endif %}
+{% endblock %}

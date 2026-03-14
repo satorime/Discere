@@ -1,0 +1,96 @@
+{% extends 'users/base_dashboard.html' %}
+{% load static %}
+{% block title %}{{ quiz.title }} - Discere{% endblock %}
+{% block header_title %}Quiz{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'users/css/study.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="quiz-container">
+    <div class="quiz-header">
+        <h1>{{ quiz.title }}</h1>
+        <div class="quiz-progress-wrap">
+            <div class="study-progress-bar">
+                <div class="study-progress-fill" id="quizProgressFill"></div>
+            </div>
+            <span class="study-progress-text" id="quizProgressText">Question 1</span>
+        </div>
+    </div>
+
+    <form method="post" id="quizForm">
+        {% csrf_token %}
+
+        <div id="questionsContainer">
+            <!-- Questions rendered by JS -->
+        </div>
+
+        <!-- Navigation -->
+        <div class="quiz-nav">
+            <button type="button" class="btn-view" id="prevBtn" onclick="prevQuestion()" style="display:none;">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button type="button" class="btn-continue" id="nextBtn" onclick="nextQuestion()">
+                Next <i class="fas fa-arrow-right"></i>
+            </button>
+            <button type="submit" class="btn-generate" id="submitBtn" style="display:none;">
+                <i class="fas fa-check"></i> Submit Quiz
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+const QUESTIONS = {{ questions_json|safe }};
+let current = 0;
+
+function renderQuestion(index) {
+    const q = QUESTIONS[index];
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = `
+        <div class="quiz-question-card">
+            <div class="question-number">Question ${index + 1} of ${QUESTIONS.length}</div>
+            <h2 class="question-text">${q.question}</h2>
+            <div class="options-grid">
+                ${['a','b','c','d'].map(opt => `
+                    <label class="option-label" id="opt-${opt}">
+                        <input type="radio" name="q_${q.id}" value="${opt.toUpperCase()}"
+                               onchange="selectOption('${opt}')">
+                        <span class="option-letter">${opt.toUpperCase()}</span>
+                        <span class="option-text">${q['option_' + opt]}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>`;
+    updateNav();
+    updateProgress();
+}
+
+function selectOption(opt) {
+    document.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected'));
+    document.getElementById('opt-' + opt).classList.add('selected');
+}
+
+function updateProgress() {
+    const pct = Math.round(((current + 1) / QUESTIONS.length) * 100);
+    document.getElementById('quizProgressFill').style.width = pct + '%';
+    document.getElementById('quizProgressText').textContent = `Question ${current + 1} of ${QUESTIONS.length}`;
+}
+
+function updateNav() {
+    document.getElementById('prevBtn').style.display = current > 0 ? 'inline-flex' : 'none';
+    document.getElementById('nextBtn').style.display = current < QUESTIONS.length - 1 ? 'inline-flex' : 'none';
+    document.getElementById('submitBtn').style.display = current === QUESTIONS.length - 1 ? 'inline-flex' : 'none';
+}
+
+function nextQuestion() {
+    if (current < QUESTIONS.length - 1) { current++; renderQuestion(current); }
+}
+
+function prevQuestion() {
+    if (current > 0) { current--; renderQuestion(current); }
+}
+
+renderQuestion(0);
+</script>
+{% endblock %}
