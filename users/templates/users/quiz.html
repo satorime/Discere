@@ -40,28 +40,34 @@
     </form>
 </div>
 
+{{ questions_json|json_script:"questions-data" }}
 <script>
-const QUESTIONS = {{ questions_json|safe }};
+const QUESTIONS = JSON.parse(document.getElementById('questions-data').textContent);
 let current = 0;
 
 function renderQuestion(index) {
     const q = QUESTIONS[index];
     const container = document.getElementById('questionsContainer');
+    // Use safe static values in innerHTML, then set user content via textContent
     container.innerHTML = `
         <div class="quiz-question-card">
             <div class="question-number">Question ${index + 1} of ${QUESTIONS.length}</div>
-            <h2 class="question-text">${q.question}</h2>
+            <h2 class="question-text" id="q-text"></h2>
             <div class="options-grid">
                 ${['a','b','c','d'].map(opt => `
                     <label class="option-label" id="opt-${opt}">
                         <input type="radio" name="q_${q.id}" value="${opt.toUpperCase()}"
                                onchange="selectOption('${opt}')">
                         <span class="option-letter">${opt.toUpperCase()}</span>
-                        <span class="option-text">${q['option_' + opt]}</span>
+                        <span class="option-text" id="opt-text-${opt}"></span>
                     </label>
                 `).join('')}
             </div>
         </div>`;
+    document.getElementById('q-text').textContent = q.question;
+    ['a','b','c','d'].forEach(opt => {
+        document.getElementById('opt-text-' + opt).textContent = q['option_' + opt];
+    });
     updateNav();
     updateProgress();
 }

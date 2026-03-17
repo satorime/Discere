@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Course, Enrollment, Deck, Flashcard, FlashcardProgress, Quiz, QuizQuestion, QuizAttempt
-from .forms import SignUpForm
+from .forms import SignUpForm, ProfileForm
 from . import ai_utils
 
 
@@ -123,14 +123,16 @@ def enroll_view(request, course_id):
 @login_required(login_url='login')
 def profile_view(request):
     if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name', user.first_name)
-        user.last_name = request.POST.get('last_name', user.last_name)
-        user.email = request.POST.get('email', user.email)
-        user.save()
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('profile')
-    return render(request, 'users/profile.html', {'user': request.user, 'active_page': 'profile'})
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ProfileForm(instance=request.user)
+    return render(request, 'users/profile.html', {'user': request.user, 'form': form, 'active_page': 'profile'})
 
 
 # ──────────────────────────────────────────────

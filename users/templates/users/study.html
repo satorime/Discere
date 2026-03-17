@@ -74,8 +74,9 @@
     </div>
 </div>
 
+{{ flashcards_json|json_script:"flashcards-data" }}
 <script>
-const CARDS = {{ flashcards_json|safe }};
+const CARDS = JSON.parse(document.getElementById('flashcards-data').textContent);
 const CSRF = '{{ csrf_token }}';
 let currentIndex = 0;
 let isFlipped = false;
